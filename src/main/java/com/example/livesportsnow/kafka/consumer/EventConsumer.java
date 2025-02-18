@@ -8,8 +8,10 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Collections;
 
 import com.example.livesportsnow.service.RedisService;
+import com.example.livesportsnow.service.EsService;
 
 @Slf4j
 @Service
@@ -18,6 +20,7 @@ public class EventConsumer {
 
     private final Gson gson;
     private final RedisService redisService;
+    private final EsService esService;
 
     @KafkaListener(
             topics = "${spring.kafka.topic.match-events}",
@@ -61,7 +64,10 @@ public class EventConsumer {
     
     // Elasticsearch 저장을 위한 메서드 시그니처
     private void saveToElasticsearch(Map<String, Object> eventData) {
-        log.info("TODO: Save to Elasticsearch - {}", eventData);
-        // ElasticsearchService 구현 후 호출
+        try {
+            esService.bulkInsertEvents(Collections.singletonList(eventData));
+        } catch (Exception e) {
+            log.error("Error saving to Elasticsearch: {}", eventData, e);
+        }
     }
 } 

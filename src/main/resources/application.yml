@@ -2,17 +2,6 @@ spring:
   application:
     name: live-sports-now
   
-  # Redis 설정
-  data:
-    redis:
-      host: localhost
-      port: 6379
-  
-  # Elasticsearch 설정
-  elasticsearch:
-    uris: http://localhost:9200
-  
-  # Kafka 설정
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -25,6 +14,19 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     topic:
       match-events: match_events
+  
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  
+  elasticsearch:
+    uris: http://localhost:9200
+
+# Elasticsearch 인덱스 설정
+elasticsearch:
+  index:
+    events: match_events
 
 server:
   port: 8080 
