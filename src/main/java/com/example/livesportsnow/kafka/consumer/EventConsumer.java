@@ -9,12 +9,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+import com.example.livesportsnow.service.RedisService;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventConsumer {
 
     private final Gson gson;
+    private final RedisService redisService;
 
     @KafkaListener(
             topics = "${spring.kafka.topic.match-events}",
@@ -44,8 +47,16 @@ public class EventConsumer {
     
     // Redis 저장을 위한 메서드 시그니처
     private void saveToRedis(Map<String, Object> eventData) {
-        log.info("TODO: Save to Redis - {}", eventData);
-        // RedisService 구현 후 호출
+        try {
+            String eventType = (String) eventData.get("eventType");
+            if ("GOAL".equals(eventType)) {
+                String teamId = (String) eventData.get("team");
+                Double newScore = redisService.incrementScore("scoreboard", teamId);
+                log.info("Updated score for team {}: {}", teamId, newScore);
+            }
+        } catch (Exception e) {
+            log.error("Error saving to Redis: {}", eventData, e);
+        }
     }
     
     // Elasticsearch 저장을 위한 메서드 시그니처
