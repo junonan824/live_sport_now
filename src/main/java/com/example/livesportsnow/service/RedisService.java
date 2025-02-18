@@ -1,13 +1,11 @@
 package com.example.livesportsnow.service;
 
-import com.example.livesportsnow.controller.ScoreStreamController;
 import com.example.livesportsnow.event.ScoreUpdateEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.LinkedHashMap;

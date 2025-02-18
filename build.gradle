@@ -56,6 +56,9 @@ dependencies {
     // Spring Messaging
     implementation 'org.springframework:spring-messaging'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    
+    // Jakarta Servlet
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 }
 
 tasks.named('test') {
