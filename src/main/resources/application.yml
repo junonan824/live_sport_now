@@ -30,3 +30,15 @@ elasticsearch:
 
 server:
   port: 8080 
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    tags:
+      application: live-sports-now
+    export:
+      prometheus:
+        enabled: true 
