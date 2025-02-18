@@ -32,12 +32,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     
     // Elasticsearch
-    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.14'
-    implementation 'org.elasticsearch:elasticsearch:7.17.14'
-    implementation 'org.elasticsearch.client:elasticsearch-rest-client:7.17.14'
+    implementation 'co.elastic.clients:elasticsearch-java:8.12.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'jakarta.json:jakarta.json-api:2.1.1'
-    implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
-    implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+    implementation 'org.springframework.data:spring-data-elasticsearch:5.2.3'
     
     // Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -49,6 +47,15 @@ dependencies {
     
     // Gson
     implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.webjars:sockjs-client:1.5.1'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+    
+    // Spring Messaging
+    implementation 'org.springframework:spring-messaging'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
