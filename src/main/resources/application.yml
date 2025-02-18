@@ -21,6 +21,8 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      match-events: match_events
 
 server:
   port: 8080 

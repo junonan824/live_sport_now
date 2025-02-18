@@ -41,6 +41,9 @@ dependencies {
     // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+    
+    // Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 tasks.named('test') {
