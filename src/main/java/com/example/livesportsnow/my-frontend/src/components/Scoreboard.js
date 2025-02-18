@@ -1,36 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import './Scoreboard.css';
 
 function Scoreboard() {
     const [scores, setScores] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [status, setStatus] = useState('connecting');
 
     useEffect(() => {
-        const fetchScores = async () => {
-            try {
-                const response = await axios.get('/api/scoreboard/top/10');
-                setScores(Object.entries(response.data));
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to fetch scores');
-                setLoading(false);
+        console.log('Connecting to SSE...');
+        const eventSource = new EventSource('http://localhost:8080/stream/scores', {
+            withCredentials: true
+        });
+        
+        console.log('Initial readyState:', eventSource.readyState);
+        
+        const checkConnection = setInterval(() => {
+            console.log('Current readyState:', eventSource.readyState);
+            if (eventSource.readyState === EventSource.OPEN) {
+                console.log('Connection is open');
+                clearInterval(checkConnection);
             }
+        }, 1000);
+
+        eventSource.onopen = () => {
+            console.log('SSE Connection opened successfully');
+            console.log('ReadyState after open:', eventSource.readyState);
+            setStatus('connected');
+            setError(null);
         };
 
-        fetchScores();
-        // 5초마다 스코어보드 갱신
-        const interval = setInterval(fetchScores, 5000);
-        return () => clearInterval(interval);
-    }, []);
+        eventSource.addEventListener('connect', (event) => {
+            console.log('Connect event received:', event);
+        });
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div className="error">{error}</div>;
+        eventSource.addEventListener('scores', (event) => {
+            console.log('Score event received:', event);
+            console.log('Event type:', event.type);
+            console.log('Event data:', event.data);
+            
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Parsed data:', data);
+                if (Object.keys(data).length > 0) {
+                    const entries = Object.entries(data);
+                    console.log('Setting scores:', entries);
+                    setScores(entries);
+                } else {
+                    console.log('Received empty scores data');
+                }
+            } catch (err) {
+                console.error('Parse error:', err);
+                setError('Failed to parse score data');
+            }
+        });
+
+        eventSource.onerror = (error) => {
+            console.error('SSE error:', error);
+            if (eventSource.readyState === EventSource.CLOSED) {
+                console.log('Connection was closed');
+                setStatus('disconnected');
+            } else {
+                console.log('Connection error, attempting to reconnect...');
+                setStatus('reconnecting');
+            }
+            setError('Connection lost. Retrying...');
+        };
+
+        return () => {
+            clearInterval(checkConnection);
+            console.log('Cleaning up SSE connection');
+            eventSource.close();
+        };
+    }, []);
 
     return (
         <div className="scoreboard">
             <h2>Live Scoreboard</h2>
+            {status !== 'connected' && (
+                <div className="connection-status">{status}...</div>
+            )}
+            {error && <div className="error">{error}</div>}
             <table>
                 <thead>
                     <tr>
