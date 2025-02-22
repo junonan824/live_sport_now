@@ -5,7 +5,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-      group-id: live-sports-group
+      group-id: match-events-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -13,12 +13,20 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     topic:
-      match-events: match_events
+      match-events: match-events
   
   data:
     redis:
       host: localhost
       port: 6379
+      database: 0
+      timeout: 60000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
   
   elasticsearch:
     uris: http://localhost:9200
@@ -26,10 +34,10 @@ spring:
 # Elasticsearch 인덱스 설정
 elasticsearch:
   index:
-    events: match_events
+    events: match-events
 
 server:
-  port: 8080 
+  port: 8080
 
 management:
   endpoints:

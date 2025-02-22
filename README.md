@@ -85,10 +85,9 @@ docker-compose up -d
 
 # 상태 확인
 docker-compose ps
-
-# 프로젝트 루트 디렉토리에서 백엔드 서버 실행
+# 프로젝트 루트 디렉토리에서 빌드 및 백엔드 서버 실행
+./gradlew build
 ./gradlew bootRun
-```
 
 ### 2. 프론트엔드 실행
 ```bash
@@ -195,3 +194,131 @@ GitHub Actions를 통해 자동 배포가 구성되어 있습니다:
 4. SSE 연결 끊김
    - 네트워크 상태 확인
    - 브라우저 캐시 삭제
+
+### 4. 시뮬레이션 테스트
+```bash
+# 1. 새로운 가상 경기 시작
+curl -X POST "http://localhost:8080/api/simulation/matches" \
+-H "Content-Type: application/json" \
+-d '{
+    "homeTeam": "Tottenham",
+    "awayTeam": "Manchester City"
+}'
+
+# 2. 실시간 로그 모니터링
+tail -f logs/application.log
+
+# 3. 특정 경기의 골 이벤트 조회
+curl "http://localhost:8080/api/events/match/{matchId}/goals"
+
+# 4. 현재 스코어보드 조회
+curl "http://localhost:8080/api/scoreboard/top/10"
+```
+
+#### 시뮬레이션 동작 방식
+- 30초마다 새로운 이벤트가 자동 생성됩니다 (골, 슈팅, 경고 등)
+- 각 이벤트는 실제 선수 데이터를 기반으로 생성됩니다
+- 90분이 지나면 경기가 자동으로 종료됩니다
+
+#### 프론트엔드에서 실시간 경기 보기
+1. 브라우저에서 프론트엔드 앱 접속
+2. SSE를 통해 실시간으로 업데이트되는 경기 정보 확인
+3. 개발자 도구의 Network 탭에서 SSE 연결 상태 모니터링
+
+#### 문제 해결
+1. SSE 연결 문제
+```bash
+# Redis 서버 상태 확인
+docker ps | grep redis
+```
+
+2. 이벤트가 생성되지 않는 경우
+```bash
+# 애플리케이션 로그 확인
+tail -f logs/application.log | grep "Generated event"
+```
+
+3. 데이터베이스 연결 문제
+```bash
+# Docker 컨테이너 상태 확인
+docker-compose ps
+```
+
+### 시뮬레이션 테스트 가이드
+
+#### 1. 서버 실행 확인
+
+#### 1-1. 백엔드 서버 실행
+```bash
+docker-compose up -d
+```
+
+#### 1-2. 백엔드 서버가 정상적으로 실행 중인지 확인
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+#### 2. 시뮬레이션 실행
+```bash
+# 시뮬레이션 서버 실행
+curl -X POST "http://localhost:8080/api/simulation/matches" \
+-H "Content-Type: application/json" \
+-d '{
+    "homeTeam": "Tottenham",
+    "awayTeam": "Manchester City"
+}'
+```
+응답 예시
+```json
+{"matchId":"c333fc7b-1ae0-4e22-9839-d17667019c97","message":"Started simulation: Tottenham vs Manchester City"}
+```
+
+#### 3. 프론트엔드에서 확인
+#### 3-1. 브라우저에서 프론트엔드 앱 접속
+   ```bash
+   cd frontend
+   npm start
+   ```
+   - 브라우저가 자동으로 http://localhost:3000 열림
+
+#### 3-2. 실시간 경기 정보 확인
+   - 메인 페이지에서 진행 중인 경기 목록 확인
+   - 시뮬레이션 경기 클릭하여 상세 페이지로 이동
+
+#### 3-3. 개발자 도구로 모니터링
+   - F12 또는 우클릭 > 검사 클릭
+   - Network 탭 선택
+   - Filter: "EventSource" 입력
+   - SSE 연결 상태 및 이벤트 수신 확인
+
+#### 4. 실시간 업데이트 확인
+#### 4-1. 실시간 로그 모니터링
+   ```bash
+   tail -f logs/application.log | grep "Generated event"
+   ```
+#### 4-2. 현재 스코어 확인
+   ```bash
+   curl "http://localhost:8080/api/scoreboard/top/10"
+   ```
+#### 4-3. 특정 경기의 골 이벤트 조회
+   ```bash
+   curl "http://localhost:8080/api/events/match/{matchId}/goals"
+   ```
+
+#### 5. 문제 해결
+#### 5-1. SSE 연결이 보이지 않는 경우:
+  # Redis 상태 확인
+  ```bash
+  docker ps | grep redis
+  ```
+
+#### 5-2. 경기 정보가 업데이트되지 않는 경우:
+  # 애플리케이션 로그 확인
+  ```bash
+  	tail -f logs/application.log
+  ```
+
+#### 5-3. 프론트엔드에서 데이터를 받지 못하는 경우:
+  1. 브라우저 콘솔 로그 확인
+  2. CORS 설정 확인
+  3. 네트워크 요청/응답 확인

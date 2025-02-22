@@ -9,22 +9,27 @@ import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 @Configuration
+@EnableElasticsearchRepositories(basePackages = "com.example.livesportsnow.repository")
 public class ElasticsearchConfig {
 
     @Value("${spring.elasticsearch.uris}")
-    private String elasticsearchUri;
+    private String elasticsearchUrl;
 
     @Bean
-    public ElasticsearchClient elasticsearchClient() {
-        RestClient restClient = RestClient.builder(
-            HttpHost.create(elasticsearchUri)
-        ).build();
+    public RestClient restClient() {
+        return RestClient.builder(HttpHost.create(elasticsearchUrl)).build();
+    }
 
-        ElasticsearchTransport transport = new RestClientTransport(
-            restClient, new JacksonJsonpMapper());
+    @Bean
+    public ElasticsearchTransport elasticsearchTransport(RestClient restClient) {
+        return new RestClientTransport(restClient, new JacksonJsonpMapper());
+    }
 
+    @Bean
+    public ElasticsearchClient elasticsearchClient(ElasticsearchTransport transport) {
         return new ElasticsearchClient(transport);
     }
 } 
