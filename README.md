@@ -49,6 +49,34 @@
 - Java 17  
 - Node.js & npm  
 
+### Docker & Docker Compose 설치
+
+#### Windows
+1. [Docker Desktop](https://www.docker.com/products/docker-desktop) 설치
+   - Docker Compose는 Docker Desktop에 포함되어 있음
+
+#### Mac
+1. [Docker Desktop](https://www.docker.com/products/docker-desktop) 설치
+   - Docker Compose는 Docker Desktop에 포함되어 있음
+
+#### Linux (Ubuntu)
+```bash
+# Docker 설치
+sudo apt-get update
+sudo apt-get install docker.io
+
+# Docker Compose 설치
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Docker 서비스 시작
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 현재 사용자를 docker 그룹에 추가 (sudo 없이 실행하기 위함)
+sudo usermod -aG docker $USER
+```
+
 ### 1. 백엔드 인프라 실행
 
 ```bash
@@ -58,13 +86,19 @@ docker-compose up -d
 # 상태 확인
 docker-compose ps
 
-3. 프론트엔드 실행
+# 프로젝트 루트 디렉토리에서 백엔드 서버 실행
+./gradlew bootRun
+```
+
+### 2. 프론트엔드 실행
 ```bash
 cd frontend
 npm install
 npm start
 ```
-4. 테스트
+
+### 3. 테스트
+```bash
 # 이벤트 발생 테스트
 curl -X POST "http://localhost:8080/api/test/events" \
 -H "Content-Type: application/json" \
@@ -75,9 +109,18 @@ curl -X POST "http://localhost:8080/api/test/events" \
   "player": "Player1",
   "timestamp": "2024-03-15T14:30:00Z"
 }'
-
+# 이벤트 발생 테스트2
+curl -X POST "http://localhost:8080/api/test/events" \
+-H "Content-Type: application/json" \
+-d '{
+  "matchId": "match123",
+  "eventType": "GOAL",
+  "team": "TeamB",
+  "player": "Player2",
+  "timestamp": "2024-03-15T14:30:00Z"
+}'
 # 시스템 상태 확인
-./monitor.sh
+sh ./monitor.sh
 
 # 부하 테스트
 k6 run load-test.js
@@ -136,12 +179,19 @@ GitHub Actions를 통해 자동 배포가 구성되어 있습니다:
 문제 해결
 
 일반적인 문제
-	1.	Redis 연결 실패
-	•	Redis 서버 실행 확인
-	•	포트 충돌 확인
-	2.	Kafka 연결 오류
-	•	Zookeeper 실행 확인
-	•	토픽 존재 여부 확인
-	3.	SSE 연결 끊김
-	•	네트워크 상태 확인
-	•	브라우저 캐시 삭제
+1. Docker 관련 문제
+   - 권한 문제: `sudo usermod -aG docker $USER` 실행 후 재로그인
+   - 포트 충돌: `docker ps` 로 실행 중인 컨테이너 확인
+   - 컨테이너 충돌: `docker-compose down -v` 로 기존 컨테이너 제거
+
+2. Redis 연결 실패
+   - Redis 서버 실행 확인
+   - 포트 충돌 확인
+
+3. Kafka 연결 오류
+   - Zookeeper 실행 확인
+   - 토픽 존재 여부 확인
+
+4. SSE 연결 끊김
+   - 네트워크 상태 확인
+   - 브라우저 캐시 삭제

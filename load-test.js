@@ -69,23 +69,39 @@ export default function() {
 
 // 테스트 완료 후 실행
 export function handleSummary(data) {
-    console.log('\n부하 테스트 결과 요약:');
-    console.log('===========================================');
-    console.log(`총 실행 시간: ${data.metrics.iteration_duration.values.avg.toFixed(1)}초`);
-    console.log(`총 요청 수: ${data.metrics.iterations.values.count}개`);
-    console.log(`평균 응답 시간: ${data.metrics.http_req_duration.values.avg.toFixed(1)}ms`);
-    console.log(`최대 응답 시간: ${data.metrics.http_req_duration.values.max.toFixed(1)}ms`);
-    console.log(`95퍼센타일 응답 시간: ${data.metrics.http_req_duration.values.p95.toFixed(1)}ms`);
-    console.log(`에러율: ${(data.metrics.errors.values.rate * 100).toFixed(2)}%`);
-    console.log('===========================================');
-    
-    if (data.metrics.errors.values.rate > 0.1) {
-        console.log('⚠️ 경고: 에러율이 10%를 초과했습니다!');
-    }
-    
-    if (data.metrics.http_req_duration.values.p95 > 500) {
-        console.log('⚠️ 경고: 95% 응답시간이 500ms를 초과했습니다!');
-    }
+  console.log('전체 메트릭 데이터:', JSON.stringify(data, null, 2));
 
-    return null;
+  // 안전한 메트릭 접근
+  const p95ResponseTime = data.metrics?.http_req_duration?.values?.p95 || 'N/A';
+  const errorRate = data.metrics?.errors?.values?.rate 
+    ? (data.metrics.errors.values.rate * 100).toFixed(2) 
+    : 'N/A';
+
+  console.log(`95퍼센타일 응답 시간: ${
+    typeof p95ResponseTime === 'number' 
+      ? p95ResponseTime.toFixed(1) + 'ms' 
+      : p95ResponseTime
+  }`);
+  console.log(`에러율: ${errorRate}%`);
+
+  return {
+    'stdout': `
+    =========================
+    🚀 부하 테스트 결과 요약 🚀
+    =========================
+    총 요청 수: ${data.metrics?.http_reqs?.values?.count || 'N/A'}
+    평균 응답 시간: ${
+      data.metrics?.http_req_duration?.values?.avg 
+        ? (data.metrics.http_req_duration.values.avg * 1000).toFixed(2) + 'ms'
+        : 'N/A'
+    }
+    에러율: ${errorRate}%
+    95% 응답 시간: ${
+      typeof p95ResponseTime === 'number' 
+        ? p95ResponseTime.toFixed(1) + 'ms' 
+        : p95ResponseTime
+    }
+    =========================
+    `,
+  };
 } 
